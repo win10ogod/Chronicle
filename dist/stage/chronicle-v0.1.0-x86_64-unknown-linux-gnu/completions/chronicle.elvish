@@ -1,0 +1,267 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[chronicle] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'chronicle'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'chronicle'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand init 'Initialize `.chronicle` directory structure in the project'
+            cand remember 'Store a new memory block (and commit it to Git)'
+            cand recall 'Recall memory blocks using the MAMA matching algorithm'
+            cand consolidate 'Move eligible short-term memories into long-term storage'
+            cand forget 'Apply forgetting: move low-strength memories to archive or delete'
+            cand log 'Show memory change history (wraps `git log`)'
+            cand branch 'Git branch helpers for sandboxed reasoning'
+            cand completions 'Print shell completion script'
+            cand wal 'Internal: process WAL tasks'
+            cand status 'Print project status summary'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'chronicle;init'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand --git-init 'Create the Git repository if missing (`git init`)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;remember'= {
+            cand -m 'Memory message/body (Markdown supported)'
+            cand --msg 'Memory message/body (Markdown supported)'
+            cand --id 'Optional explicit id / filename stem (e.g. `Rust` creates `Rust.md`)'
+            cand --layer 'Store in short-term or long-term layer'
+            cand -t 'Extra tags (repeatable)'
+            cand --tags 'Extra tags (repeatable)'
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand --no-commit 'Skip Git commit (still writes the file)'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;recall'= {
+            cand -q 'Search query'
+            cand --query 'Search query'
+            cand -k 'Number of results to return'
+            cand --top-k 'Number of results to return'
+            cand --top 'Number of results to return'
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand --include-archive 'Include archive results'
+            cand --no-touch 'Do not update access metadata (hit_count/last_access)'
+            cand --json 'Output JSON for agent consumption'
+            cand --no-assoc 'Skip associative expansion via `[[links]]`'
+            cand --no-commit 'Skip Git commit for access metadata updates'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;consolidate'= {
+            cand --min-hits 'Consolidate if hit_count >= this value'
+            cand --min-age-hours 'Consolidate if age (hours) >= this value (0 disables)'
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand --dry-run 'Preview actions without writing'
+            cand --no-commit 'Skip Git commit'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;forget'= {
+            cand --id 'Delete a specific memory by id'
+            cand --threshold 'Archive long-term memories whose ACT-R heat is below this threshold (0..1 recommended)'
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand --dry-run 'Preview actions without writing'
+            cand --no-commit 'Skip Git commit'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;log'= {
+            cand --limit 'Maximum number of commits to show'
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand create 'Create and checkout a new branch'
+            cand checkout 'Checkout an existing branch'
+            cand merge 'Merge a branch into the current branch'
+            cand list 'List local branches'
+            cand current 'Print current branch name'
+            cand delete 'Delete a local branch'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'chronicle;branch;create'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch;checkout'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch;merge'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch;list'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch;current'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch;delete'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand --force 'force'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;branch;help'= {
+            cand create 'Create and checkout a new branch'
+            cand checkout 'Checkout an existing branch'
+            cand merge 'Merge a branch into the current branch'
+            cand list 'List local branches'
+            cand current 'Print current branch name'
+            cand delete 'Delete a local branch'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'chronicle;branch;help;create'= {
+        }
+        &'chronicle;branch;help;checkout'= {
+        }
+        &'chronicle;branch;help;merge'= {
+        }
+        &'chronicle;branch;help;list'= {
+        }
+        &'chronicle;branch;help;current'= {
+        }
+        &'chronicle;branch;help;delete'= {
+        }
+        &'chronicle;branch;help;help'= {
+        }
+        &'chronicle;completions'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;wal'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand run 'run'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'chronicle;wal;run'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;wal;help'= {
+            cand run 'run'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'chronicle;wal;help;run'= {
+        }
+        &'chronicle;wal;help;help'= {
+        }
+        &'chronicle;status'= {
+            cand --root 'Project root (defaults to auto-detect from current directory)'
+            cand --commit 'Git commit mode after write/touch operations'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'chronicle;help'= {
+            cand init 'Initialize `.chronicle` directory structure in the project'
+            cand remember 'Store a new memory block (and commit it to Git)'
+            cand recall 'Recall memory blocks using the MAMA matching algorithm'
+            cand consolidate 'Move eligible short-term memories into long-term storage'
+            cand forget 'Apply forgetting: move low-strength memories to archive or delete'
+            cand log 'Show memory change history (wraps `git log`)'
+            cand branch 'Git branch helpers for sandboxed reasoning'
+            cand completions 'Print shell completion script'
+            cand wal 'Internal: process WAL tasks'
+            cand status 'Print project status summary'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'chronicle;help;init'= {
+        }
+        &'chronicle;help;remember'= {
+        }
+        &'chronicle;help;recall'= {
+        }
+        &'chronicle;help;consolidate'= {
+        }
+        &'chronicle;help;forget'= {
+        }
+        &'chronicle;help;log'= {
+        }
+        &'chronicle;help;branch'= {
+            cand create 'Create and checkout a new branch'
+            cand checkout 'Checkout an existing branch'
+            cand merge 'Merge a branch into the current branch'
+            cand list 'List local branches'
+            cand current 'Print current branch name'
+            cand delete 'Delete a local branch'
+        }
+        &'chronicle;help;branch;create'= {
+        }
+        &'chronicle;help;branch;checkout'= {
+        }
+        &'chronicle;help;branch;merge'= {
+        }
+        &'chronicle;help;branch;list'= {
+        }
+        &'chronicle;help;branch;current'= {
+        }
+        &'chronicle;help;branch;delete'= {
+        }
+        &'chronicle;help;completions'= {
+        }
+        &'chronicle;help;wal'= {
+            cand run 'run'
+        }
+        &'chronicle;help;wal;run'= {
+        }
+        &'chronicle;help;status'= {
+        }
+        &'chronicle;help;help'= {
+        }
+    ]
+    $completions[$command]
+}
